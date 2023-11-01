@@ -1,0 +1,31 @@
+﻿select *from public.logs l 
+select *from "Products" p 
+select *from "AspNetUserRoles" anur 
+select * from "AspNetUsers" anu 
+select * from "AspNetRoles" anr  
+select *from "AspNetRoleClaims" anrc 
+select *from "AspNetUserLogins" anul 
+select *from "AppRoleEndpoint" are2 
+select *from  "Endpoints" e 
+
+select *from "BasketItems" bi 
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+do $$
+declare i integer := 1;
+begin
+	while i <= 1000 loop
+
+		INSERT INTO public."Products"
+		("Id", "Name", "Stock", "Price", "CreatedDate", "UpdatedDate")
+		VALUES(uuid_generate_v4(), concat('Product ', i) , floor(random() * 100), floor(random() * 10) * 10, now(), now());
+
+	
+	    i := i + 1;
+	end loop;
+end $$;
+
