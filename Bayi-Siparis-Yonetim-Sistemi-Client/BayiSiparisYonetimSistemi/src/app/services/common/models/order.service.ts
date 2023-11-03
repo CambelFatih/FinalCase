@@ -32,6 +32,19 @@ export class OrderService {
 
     return await promiseData;
   }
+  async getOrdersByUserId(page: number = 0, size: number = 5, successCallBack?: () => void, errorCallBack?: (errorMessage: string) => void): Promise<{ totalOrderCount: number; orders: List_Order[] }> {
+    const observable: Observable<{ totalOrderCount: number; orders: List_Order[] }> = this.httpCLientService.get({
+      controller: "orders",
+      action: "ByUserId", // Action to fetch orders by user ID
+      queryString: `page=${page}&size=${size}`
+    });
+
+    const promiseData = firstValueFrom(observable);
+    promiseData.then(value => successCallBack ? successCallBack() : null)
+      .catch(error => errorCallBack ? errorCallBack(error) : null);
+
+    return await promiseData;
+  }
 
   async getOrderById(id: string, successCallBack?: () => void, errorCallBack?: (errorMessage: string) => void) {
     const observable: Observable<SingleOrder> = this.httpCLientService.get<SingleOrder>({

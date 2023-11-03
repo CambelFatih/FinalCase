@@ -1,6 +1,7 @@
 ﻿using BSYS.Application.Abstractions.Services;
 using BSYS.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
 namespace BSYS.Persistence.Services;
 
@@ -31,5 +32,15 @@ public class UserRoleService : IUserRoleService
         }
 
         return roles.Contains(roleName);
+    }
+    public async Task<List<string>> GetUserRolesAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return new List<string>();
+        var roles = await _userManager.GetRolesAsync(user);
+        if (user == null)
+            return new List<string>();
+        return roles.ToList();
     }
 }

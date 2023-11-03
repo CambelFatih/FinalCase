@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductsModule } from './products/products.module';
 import { HomeModule } from './home/home.module';
+import { OrderModule } from './order/order.module';
 import { BasketsModule } from './baskets/baskets.module';
 import { RegisterComponent } from './register/register.component';
 import { RegisterModule } from './register/register.module';
@@ -12,14 +13,13 @@ import { UpdatePasswordComponent } from './update-password/update-password.compo
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { UpdatePasswordModule } from './update-password/update-password.module';
 
-
 @NgModule({
   declarations: [
-
   ],
   imports: [
     CommonModule,
     ProductsModule,
+    OrderModule,
     HomeModule,
     BasketsModule,
     RegisterModule,

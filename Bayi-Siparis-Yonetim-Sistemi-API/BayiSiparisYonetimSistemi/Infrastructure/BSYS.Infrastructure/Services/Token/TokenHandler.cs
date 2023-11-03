@@ -54,20 +54,25 @@ public class TokenHandler : ITokenHandler
     }
     private async Task<Claim[]> GetClaims(AppUser user)
     {
-        string role = "";
-        if (await _userRoleService.IsUserInRoleAsync(user.Id, "Admin")) role = "Admin"; 
-        else if (await _userRoleService.IsUserInRoleAsync(user.Id, "Bayi")) role = "Bayi";
-        else role = "User";
-        // Define the claims for the user
-        var claims = new[]
+        var roles = await _userRoleService.GetUserRolesAsync(user.Id);
+        if (roles == null || roles.Count == 0)
         {
-            new(ClaimTypes.Name, user.UserName),
+            // Eğer roles null veya boşsa, "User" rolünü varsayılan olarak atanır.
+            roles = new List<string> { "User" };
+        }
+        // Define the claims for the user
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.UserName.ToString()),
+            new(ClaimTypes.Email, user.Email.ToString()),
             new Claim("Id", user.Id.ToString()),
-            new Claim("UserName", user.UserName.ToString()),
-            new Claim("Email", user.Email.ToString()),
-            new Claim("Role", role),
         };
-        return claims;
+        // Her bir rol için bir Claim ekleyin
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+        return claims.ToArray();
     }
 
     public string CreateRefreshToken()

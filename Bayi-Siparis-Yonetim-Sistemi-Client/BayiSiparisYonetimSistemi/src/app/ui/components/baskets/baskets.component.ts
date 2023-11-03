@@ -71,8 +71,8 @@ export class BasketsComponent extends BaseComponent implements OnInit {
       afterClosed: async () => {
         this.showSpinner(SpinnerType.BallAtom);
         const order: Create_Order = new Create_Order();
-        order.address = "Üsküdar";
-        order.description = "Siparişiniz için teşekkür ederiz";
+        order.address = "Yenimahalle";
+        order.description = "Falanca filanca...";
         await this.orderService.create(order);
         this.hideSpinner(SpinnerType.BallAtom);
         this.toastrService.message("Sipariş alınmıştır!", "Sipariş Oluşturuldu!", {

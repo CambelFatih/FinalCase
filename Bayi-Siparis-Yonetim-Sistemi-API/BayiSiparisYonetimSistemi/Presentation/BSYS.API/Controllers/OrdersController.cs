@@ -16,6 +16,7 @@ namespace BSYS.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(AuthenticationSchemes = "Admin")]
 public class OrdersController : ControllerBase
 {
     readonly IMediator _mediator;
@@ -25,7 +26,6 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("{Id}")]
-    [Authorize(AuthenticationSchemes = "Admin")]
     [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Order By Id")]
     public async Task<ActionResult> GetOrderById([FromRoute] GetOrderByIdQueryRequest getOrderByIdQueryRequest)
     {
@@ -34,7 +34,6 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(AuthenticationSchemes = "Admin")]
     [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get All Orders")]
     public async Task<ActionResult> GetAllOrders([FromQuery] GetAllOrdersQueryRequest getAllOrdersQueryRequest)
     {
@@ -43,7 +42,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("ByUserId")]
-    [Authorize]
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Orders By User Id")]
     public async Task<ActionResult> GetOrdersByUserId([FromQuery] int page, int size)
     {
         var id = (User.Identity as ClaimsIdentity).FindFirst("Id").Value;
@@ -59,7 +58,6 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(AuthenticationSchemes = "Admin")]
     [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Writing, Definition = "Create Order")]
     public async Task<ActionResult> CreateOrder(CreateOrderCommandRequest createOrderCommandRequest)
     {
@@ -68,7 +66,6 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("complete-order/{Id}")]
-    [Authorize(AuthenticationSchemes = "Admin")]
     [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Updating, Definition = "Complete Order")]
     public async Task<ActionResult> CompleteOrder([FromRoute] CompleteOrderCommandRequest completeOrderCommandRequest)
     {

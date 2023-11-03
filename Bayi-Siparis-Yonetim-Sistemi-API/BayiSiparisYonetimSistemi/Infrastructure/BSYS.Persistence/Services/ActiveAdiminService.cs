@@ -1,7 +1,7 @@
 ﻿namespace BSYS.Persistence.Services
 {
     //signalR için oluşturulmuş servis
-    public class ActiveAdiminService
+    public class ActiveAdminService
     {
         private readonly Dictionary<string, string> activeAdmins = new Dictionary<string, string>();
 

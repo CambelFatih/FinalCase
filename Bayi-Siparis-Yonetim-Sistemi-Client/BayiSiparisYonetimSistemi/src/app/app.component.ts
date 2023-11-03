@@ -17,6 +17,7 @@ declare var $: any
 export class AppComponent {
   @ViewChild(DynamicLoadComponentDirective, { static: true })
   dynamicLoadComponentDirective: DynamicLoadComponentDirective;
+  title: string="BSYS-Client";
 
   constructor(public authService: AuthService, private toastrService: CustomToastrService, private router: Router, private dynamicLoadComponentService: DynamicLoadComponentService) {
     authService.identityCheck();

@@ -6,9 +6,9 @@ using System.Security.Claims;
 public class RoleMiddleware : IMiddleware
 {
     private readonly UserManager<AppUser> _userManager;
-    private readonly ActiveAdiminService _activeAdminService;
+    private readonly ActiveAdminService _activeAdminService;
 
-    public RoleMiddleware(UserManager<AppUser> userManager, ActiveAdiminService activeAdminService)
+    public RoleMiddleware(UserManager<AppUser> userManager, ActiveAdminService activeAdminService)
     {
         _userManager = userManager;
         _activeAdminService = activeAdminService;
