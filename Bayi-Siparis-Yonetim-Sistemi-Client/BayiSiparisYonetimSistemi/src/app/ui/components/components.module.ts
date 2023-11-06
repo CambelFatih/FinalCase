@@ -12,9 +12,12 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
 import { UpdatePasswordComponent } from './update-password/update-password.component';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { UpdatePasswordModule } from './update-password/update-password.module';
+import { ChatComponent } from './chat/chat.component';
 
 @NgModule({
   declarations: [
+  
+    ChatComponent
   ],
   imports: [
     CommonModule,

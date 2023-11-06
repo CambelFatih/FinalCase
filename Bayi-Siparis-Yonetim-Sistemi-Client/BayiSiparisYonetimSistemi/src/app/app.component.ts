@@ -6,6 +6,8 @@ import { AuthService } from './services/common/auth.service';
 import { ComponentType, DynamicLoadComponentService } from './services/common/dynamic-load-component.service';
 import { CustomToastrService, ToastrMessageType, ToastrPosition } from './services/ui/custom-toastr.service';
 import * as bootstrap from 'bootstrap'
+import { SignalRService } from './services/common/signalr.service';
+import { HubUrls } from './constants/hub-urls';
 
 declare var $: any
 
@@ -19,11 +21,12 @@ export class AppComponent {
   dynamicLoadComponentDirective: DynamicLoadComponentDirective;
   title: string="BSYS-Client";
 
-  constructor(public authService: AuthService, private toastrService: CustomToastrService, private router: Router, private dynamicLoadComponentService: DynamicLoadComponentService) {
+  constructor(public authService: AuthService, private toastrService: CustomToastrService, private router: Router, private dynamicLoadComponentService: DynamicLoadComponentService,private signalRService: SignalRService) {
     authService.identityCheck();
   }
 
   signOut() {
+    this.signalRService.disconnect(HubUrls.AdminHub);
     localStorage.removeItem("accessToken");
     this.authService.identityCheck();
     this.router.navigate([""]);

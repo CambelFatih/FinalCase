@@ -6,13 +6,15 @@ import { CustomToastrService, ToastrMessageType, ToastrPosition } from '../../se
 import { NgxSpinnerService } from 'ngx-spinner';
 import { SpinnerType } from '../../base/base.component';
 import { AuthService, _isAuthenticated } from '../../services/common/auth.service';
+import { SignalRService } from 'src/app/services/common/signalr.service';
+import { HubUrls } from 'src/app/constants/hub-urls';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
 
-  constructor(private jwtHelper: JwtHelperService, private router: Router, private toastrService: CustomToastrService, private spinner: NgxSpinnerService) {
+  constructor(private jwtHelper: JwtHelperService, private router: Router, private toastrService: CustomToastrService, private spinner: NgxSpinnerService,private signalRService: SignalRService) {
 
   }
 

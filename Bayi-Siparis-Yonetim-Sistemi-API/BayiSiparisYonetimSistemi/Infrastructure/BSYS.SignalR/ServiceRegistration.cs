@@ -10,6 +10,7 @@ public static class ServiceRegistration
     {
         collection.AddTransient<IProductHubService, ProductHubService>();
         collection.AddTransient<IOrderHubService, OrderHubService>();
+        collection.AddSingleton<IAdminHubService, AdminHubService>();
         collection.AddSignalR();
     }
 }

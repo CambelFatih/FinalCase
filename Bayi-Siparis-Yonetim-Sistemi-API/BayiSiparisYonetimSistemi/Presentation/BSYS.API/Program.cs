@@ -9,6 +9,7 @@ using BSYS.Persistence;
 using BSYS.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NpgsqlTypes;
@@ -28,7 +29,9 @@ builder.Services.AddApplicationServices();
 builder.Services.AddSignalRServices();
 
 //builder.Services.AddStorage<LocalStorage>();
+
 builder.Services.AddStorage<AzureStorage>();
+
 //builder.Services.AddStorage();
 
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
@@ -99,7 +102,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "Admin";
+    options.DefaultChallengeScheme = "Admin";
+})
     .AddJwtBearer("Admin", options =>
     {
         options.TokenValidationParameters = new()
@@ -112,8 +119,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Token:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
             LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null ? expires > DateTime.UtcNow : false,
-
-            NameClaimType = ClaimTypes.Name //JWT üzerinde Name claimne karþýlýk gelen deðeri User.Identity.Name propertysinden elde edebiliriz.
+            NameClaimType = ClaimTypes.Name, //JWT üzerinde Name claimne karþýlýk gelen deðeri User.Identity.Name propertysinden elde edebiliriz.
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Query string'den token'ý al
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/admins-hub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -126,11 +146,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.ConfigureExceptionHandler<Program>(app.Services.GetRequiredService<ILogger<Program>>());
+
 app.UseStaticFiles();
 
 app.UseSerilogRequestLogging();
-
 app.UseHttpLogging();
+
+
 app.UseCors();
 app.UseHttpsRedirection();
 
@@ -142,8 +164,6 @@ app.Use(async (context, next) =>
     LogContext.PushProperty("user_name", username);
     await next();
 });
-
 app.MapControllers();
 app.MapHubs();
-
 app.Run();

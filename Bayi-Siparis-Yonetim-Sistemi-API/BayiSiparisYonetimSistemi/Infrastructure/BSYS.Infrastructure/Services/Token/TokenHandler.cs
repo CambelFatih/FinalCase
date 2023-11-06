@@ -1,9 +1,9 @@
 ﻿using BSYS.Application.Abstractions.Services;
 using BSYS.Application.Abstractions.Token;
 using BSYS.Domain.Entities.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -31,7 +31,8 @@ public class TokenHandler : ITokenHandler
 
         //Şifrelenmiş kimliği oluşturuyoruz.
         SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-        var claims =  await GetClaims(user);
+        List<string> roles= await _userRoleService.GetUserRolesAsync(user.Id);
+        var claims =  await GetClaims(user, roles);
         //Oluşturulacak token ayarlarını veriyoruz.
         token.Expiration = DateTime.UtcNow.AddSeconds(second);
         JwtSecurityToken securityToken = new(
@@ -52,9 +53,8 @@ public class TokenHandler : ITokenHandler
         token.RefreshToken = CreateRefreshToken();
         return token;
     }
-    private async Task<Claim[]> GetClaims(AppUser user)
+    private async Task<Claim[]> GetClaims(AppUser user, List<string> roles)
     {
-        var roles = await _userRoleService.GetUserRolesAsync(user.Id);
         if (roles == null || roles.Count == 0)
         {
             // Eğer roles null veya boşsa, "User" rolünü varsayılan olarak atanır.

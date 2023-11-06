@@ -1,26 +1,27 @@
-﻿namespace BSYS.Persistence.Services
+﻿using BSYS.Application.Abstractions.Services;
+
+namespace BSYS.Persistence.Services;
+
+//signalR için oluşturulmuş servis
+public class ActiveAdminService : IActiveAdminService
 {
-    //signalR için oluşturulmuş servis
-    public class ActiveAdminService
+    private readonly Dictionary<string, string> activeAdmins = new Dictionary<string, string>();
+
+    public void AddActiveAdmin(string connectionId, string userId)
     {
-        private readonly Dictionary<string, string> activeAdmins = new Dictionary<string, string>();
+        activeAdmins[connectionId] = userId;
+    }
 
-        public void AddActiveAdmin(string connectionId, string userId)
+    public void RemoveInactiveAdmin(string connectionId)
+    {
+        if (activeAdmins.ContainsKey(connectionId))
         {
-            activeAdmins[connectionId] = userId;
+            activeAdmins.Remove(connectionId);
         }
+    }
 
-        public void RemoveActiveAdmin(string connectionId)
-        {
-            if (activeAdmins.ContainsKey(connectionId))
-            {
-                activeAdmins.Remove(connectionId);
-            }
-        }
-
-        public bool IsAdminActive(string userId)
-        {
-            return activeAdmins.ContainsValue(userId);
-        }
+    public bool IsAdminActive(string userId)
+    {
+        return activeAdmins.ContainsValue(userId);
     }
 }

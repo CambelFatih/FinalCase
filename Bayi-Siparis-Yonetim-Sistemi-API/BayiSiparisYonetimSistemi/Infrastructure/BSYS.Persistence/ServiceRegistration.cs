@@ -29,7 +29,7 @@ public static class ServiceRegistration
         
         services.AddScoped<IUnitofWork, UnitofWork>();
 
-        services.AddSingleton<ActiveAdminService>();
+        services.AddSingleton<IActiveAdminService, ActiveAdminService>();
 
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();

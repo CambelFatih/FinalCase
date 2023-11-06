@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@angular/core';
+import * as signalR from '@microsoft/signalr';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SignalRService {
-
+  private hubConnections: Map<string, HubConnection> = new Map();
   constructor(@Inject("baseSignalRUrl") private baseSignalRUrl: string) { }
 
   start(hubUrl: string) {
@@ -13,12 +14,19 @@ export class SignalRService {
 
     const builder: HubConnectionBuilder = new HubConnectionBuilder();
 
-    const hubConnection: HubConnection = builder.withUrl(hubUrl)
-      .withAutomaticReconnect()
-      .build();
+    const hubConnection: HubConnection = builder
+    .withUrl(hubUrl, {
+      // accessTokenFactory fonksiyonu ile token'ı sağlayın
+      accessTokenFactory: () => localStorage.getItem("accessToken"),
+    })
+    .withAutomaticReconnect()
+    .build();
 
-    hubConnection.start()
-      .then(() => console.log("Connected"))
+      hubConnection.start()
+      .then(() => {
+        console.log("Connected");
+        this.hubConnections.set(hubUrl, hubConnection); // Bağlantıyı haritaya ekle.
+      })
       .catch(error => setTimeout(() => this.start(hubUrl), 2000));
 
     hubConnection.onreconnected(connectionId => console.log("Reconnected"));
@@ -33,7 +41,25 @@ export class SignalRService {
       .catch(errorCallBack);
   }
 
+sendMessageToCustomer(hubUrl: string, customerId: string, message: string) {
+  this.invoke(hubUrl, 'SendMessageToCustomer', { customerId, message },
+    () => console.log("Message sent to customer."),
+    (error) => console.log("Failed to send message to customer:", error));
+}
+
+
   on(hubUrl: string, procedureName: string, callBack: (...message: any) => void) {
     this.start(hubUrl).on(procedureName, callBack);
+  }
+  
+  disconnect(hubUrl: string): void {
+    const fullHubUrl = this.baseSignalRUrl + hubUrl;
+    const hubConnection = this.hubConnections.get(fullHubUrl);
+    if (hubConnection) {
+      hubConnection.stop()
+        .then(() => console.log(`${hubUrl} connection stopped`))
+        .catch(err => console.log(`Error while stopping ${hubUrl} connection: `, err));
+      this.hubConnections.delete(fullHubUrl); // Bağlantıyı Map'ten sil
+    }
   }
 }

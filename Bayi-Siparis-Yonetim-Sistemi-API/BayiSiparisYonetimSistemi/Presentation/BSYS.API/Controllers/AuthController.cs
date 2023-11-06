@@ -5,7 +5,6 @@ using BSYS.Application.Features.Commands.AppUser.PasswordReset;
 using BSYS.Application.Features.Commands.AppUser.RefreshTokenLogin;
 using BSYS.Application.Features.Commands.AppUser.VerifyResetToken;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BSYS.API.Controllers;
