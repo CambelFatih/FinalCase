@@ -1,5 +1,6 @@
 export enum ReceiveFunctions {
   ProductAddedMessageReceiveFunction = "receiveProductAddedMessage",
   OrderAddedMessageReceiveFunction = "receiveOrderAddedMessage",
-  SendMessageToAdmin = "sendMessageToAdmin"
+  MessageFromAdmin = "receiveMessageFromAdmin",
+  MessageFromCustomer ="receiveMessageFromCustomer"
 }

@@ -1,15 +1,29 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using BSYS.Application.Abstractions.Hubs;
 
 namespace BSYS.SignalR.HubServices;
 
-public class AdminHubService : IAdminHubService
+public class ChatHubService : IChatHubService
 {
     private readonly ConcurrentDictionary<string, string> activeAdmins = new ConcurrentDictionary<string, string>();
     private readonly ConcurrentDictionary<string, string> activeUsers = new ConcurrentDictionary<string, string>();
     private readonly ConcurrentDictionary<string, Tuple<string, string>> customerToAdminMapping = new ConcurrentDictionary<string, Tuple<string, string>>();
     private readonly ConcurrentDictionary<string, int> adminCustomerCount = new ConcurrentDictionary<string, int>();
 
+
+    public async Task<string> GetAdminConnectionId()
+    {
+        string singleAdminConnectionId = activeAdmins.Keys.SingleOrDefault();
+        if (!string.IsNullOrEmpty(singleAdminConnectionId))
+        {
+            return singleAdminConnectionId;
+        }
+        else
+        {
+            return "Null";
+        }
+    }
     public async Task<string> AssignAdminToCustomer(string customerId)
     {
         // En az yükü olan admini bulma mantığı

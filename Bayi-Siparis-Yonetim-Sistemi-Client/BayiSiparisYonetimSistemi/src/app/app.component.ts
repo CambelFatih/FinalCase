@@ -32,23 +32,28 @@ export class AppComponent implements OnInit {
     authService.identityCheck();
   }
   ngOnInit(): void {
-    // Server'dan gelen mesajları dinle
-    // this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
-    //   if (isAuthenticated) {
-    //     // Kullanıcı giriş yaptığında mesajları dinlemeye başla
-    //     this.signalRService.on(HubUrls.AdminHub, 'ReceiveMessage', (receivedMessage: string) => {
-    //       this.messages.push(receivedMessage);
-    //     });
-    //   } else {
-    //     // Kullanıcı çıkış yaptığında veya henüz giriş yapmadıysa mesaj dinlemeyi durdur
-    //     // Bu kısım SignalRService içinde bir metot olmalıdır, örneğin:
-    //    // this.signalRService.stopConnection(HubUrls.AdminHub);
-    //   }
-    // });
+    //Server'dan gelen mesajları dinle
+    if (this.authService.isAuthenticated) {
+     if(!this.authService.isAdmin())
+        {
+          this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromAdmin, (receivedMessage: string) => {
+            console.log(receivedMessage);
+            this.messages.push(receivedMessage);
+            console.log(receivedMessage);
+          });
+        }
+        else{
+          this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromCustomer, (receivedMessage: string) => {
+            console.log(receivedMessage);
+            this.messages.push(receivedMessage);
+            console.log(receivedMessage);
+          });
+        }   
+    }
   }
 
   signOut() {
-    this.signalRService.disconnect(HubUrls.AdminHub);
+    this.signalRService.disconnect(HubUrls.ChatHub);
     localStorage.removeItem("accessToken");
     this.authService.identityCheck();
     this.router.navigate([""]);
@@ -75,23 +80,16 @@ export class AppComponent implements OnInit {
     // }
     if (this.authService.isAdmin()) {
       // Eğer kullanıcı admin ise, müşteriye mesaj gönder
-      this.signalRService.sendMessageToCustomer(HubUrls.AdminHub, this.selectedCustomerId, this.message);
+      this.signalRService.sendMessageToCustomer(HubUrls.ChatHub, this.selectedCustomerId, this.message);
     } else {
-            this.toastrService.message('User veya Bayi Mesaj Gönderdi', 'Mesaj gönderildi', {
-        messageType: ToastrMessageType.Info,
-        position: ToastrPosition.TopRight
-      });
-      // Eğer kullanıcı admin değilse, admin'e mesaj gönder
-      // this.signalRService.on(HubUrls.ProductHub, ReceiveFunctions.SendMessageToAdmin, message => {
-      //   this.alertify.message(message, {
-      //     messageType: MessageType.Notify,
-      //     position: Position.TopRight
-      //   })
-      // });
-      this.signalRService.invoke(HubUrls.AdminHub, SendFunctions.MessageToAdminSendFunction, this.message,
+      this.signalRService.invoke(HubUrls.ChatHub, SendFunctions.MessageToAdminSendFunction, this.message,
         () => {
           console.log('Message sent successfully');
           this.message = '';
+          this.toastrService.message('User veya Bayi Mesaj Gönderdi', 'Mesaj Admine iletildi.', {
+            messageType: ToastrMessageType.Info,
+            position: ToastrPosition.TopRight
+          });
         },
         (error) => {
           console.log('Failed to send message:', error);

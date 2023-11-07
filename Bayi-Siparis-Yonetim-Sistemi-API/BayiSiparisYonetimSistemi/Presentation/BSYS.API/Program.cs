@@ -128,7 +128,7 @@ builder.Services.AddAuthentication(options =>
                 // Query string'den token'ý al
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/admins-hub"))
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chat-hub"))
                 {
                     context.Token = accessToken;
                 }

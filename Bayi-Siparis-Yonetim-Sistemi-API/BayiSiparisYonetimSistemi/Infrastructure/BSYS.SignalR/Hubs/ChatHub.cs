@@ -4,11 +4,11 @@ using System.Security.Claims;
 
 namespace BSYS.SignalR.Hubs;
 
-public class AdminHub : Hub
+public class ChatHub : Hub
 {
-    private readonly IAdminHubService _adminHubService;
+    private readonly IChatHubService _adminHubService;
 
-    public AdminHub(IAdminHubService adminHubService)
+    public ChatHub(IChatHubService adminHubService)
     {
         _adminHubService = adminHubService;
     }
@@ -41,16 +41,16 @@ public class AdminHub : Hub
     }
     public async Task SendMessageToAdminAsync(string message)
     {
-        var userId = Context.UserIdentifier;
+        var userId = Context.User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
         var rolesClaims = Context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
 
         // Kullanıcının müşteri olup olmadığını kontrol et
-        if (await HasAdminRole(rolesClaims)==false)
+        if (await HasBayiRole(rolesClaims)==false)
         {
-            await Clients.Caller.SendAsync("Unauthorized", "Bu işlemi sadece müşteriler gerçekleştirebilir.");
+            await Clients.Caller.SendAsync("Error", "Bu işlemi sadece Bayiler gerçekleştirebilir.");
             return;
         }
-        var adminId = await _adminHubService.AssignAdminToCustomer(userId);
+        var adminId = await _adminHubService.GetAdminConnectionId();
         if (adminId == null)
         {
             await Clients.Caller.SendAsync("NoAdminAvailable", "Şu anda hiçbir admin aktif değil. Lütfen daha sonra tekrar deneyiniz.");
@@ -75,7 +75,10 @@ public class AdminHub : Hub
             await Clients.Caller.SendAsync("CustomerNotAvailable", "Bu müşteri şu anda aktif değil.");
         }
     }
-
+    private async Task<bool> HasBayiRole(List<Claim> rolesClaims)
+    {
+        return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Bayi", StringComparison.OrdinalIgnoreCase));
+    }
     private async Task<bool> HasAdminRole(List<Claim> rolesClaims)
     {
         return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Admin", StringComparison.OrdinalIgnoreCase));

@@ -17,16 +17,16 @@ getConnection(hubUrl: string): HubConnection {
   start(hubUrl: string) {
     hubUrl = this.baseSignalRUrl + hubUrl;
 
-    const builder: HubConnectionBuilder = new HubConnectionBuilder();
-
-    const hubConnection: HubConnection = builder
+    const hubConnection: HubConnection = new HubConnectionBuilder()
     .withUrl(hubUrl, {
-      // accessTokenFactory fonksiyonu ile token'ı sağlayın
-      accessTokenFactory: () => localStorage.getItem("accessToken"),
+      accessTokenFactory: () => {
+        // Tokenınızı burada döndürün. Eğer bu işlem asenkron ise, bir Promise döndürmelisiniz.
+        return localStorage.getItem("accessToken");
+      }
     })
     .withAutomaticReconnect()
-    .build();
-
+    .build();  
+    
       hubConnection.start()
       .then(() => {
         console.log("Connected");
@@ -44,7 +44,8 @@ getConnection(hubUrl: string): HubConnection {
     const hubConnection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);
     
     if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
-      hubConnection.invoke(procedureName, message)
+      hubConnection
+      .invoke(procedureName, message)
         .then(successCallBack)
         .catch(errorCallBack);
     } else {

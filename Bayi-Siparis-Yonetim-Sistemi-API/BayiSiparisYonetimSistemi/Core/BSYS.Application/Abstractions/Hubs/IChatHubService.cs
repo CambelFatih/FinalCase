@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace BSYS.Application.Abstractions.Hubs;
 
-public interface IAdminHubService
+public interface IChatHubService
 {
+    Task<string> GetAdminConnectionId();
     Task<string> AssignAdminToCustomer(string customerId);
     void AddActiveUser(string connectionId, string userId);
     void RemoveInactiveUser(string connectionId);

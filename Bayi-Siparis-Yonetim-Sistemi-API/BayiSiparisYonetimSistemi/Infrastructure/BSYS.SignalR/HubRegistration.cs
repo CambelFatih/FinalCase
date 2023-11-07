@@ -9,6 +9,6 @@ public static class HubRegistration
     {
         webApplication.MapHub<ProductHub>("/products-hub");
         webApplication.MapHub<OrderHub>("/orders-hub");
-        webApplication.MapHub<AdminHub>("/admins-hub");
+        webApplication.MapHub<ChatHub>("/chat-hub");
     }
 }

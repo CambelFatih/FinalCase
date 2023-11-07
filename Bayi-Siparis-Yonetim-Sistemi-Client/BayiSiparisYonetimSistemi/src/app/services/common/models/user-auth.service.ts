@@ -28,7 +28,7 @@ export class UserAuthService {
       localStorage.setItem("accessToken", tokenResponse.token.accessToken);
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
 
-      this.signalRService.start(HubUrls.AdminHub);
+      this.signalRService.start(HubUrls.ChatHub);
       
       this.toastrService.message("Kullanıcı girişi başarıyla sağlanmıştır.", "Giriş Başarılı", {
         messageType: ToastrMessageType.Success,
@@ -50,15 +50,13 @@ export class UserAuthService {
       if (tokenResponse) {
         localStorage.setItem("accessToken", tokenResponse.token.accessToken);
         localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
-
-        this.signalRService.start(HubUrls.AdminHub);
       }
 
       callBackFunction(tokenResponse ? true : false);
     } catch {
 
       if(this.authService.isAdmin())
-      this.signalRService.disconnect(HubUrls.AdminHub);
+      this.signalRService.disconnect(HubUrls.ChatHub);
 
       callBackFunction(false);
     }
@@ -77,7 +75,7 @@ export class UserAuthService {
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
 
      // this.signalRService.start(HubUrls.OrderHub)
-      this.signalRService.start(HubUrls.AdminHub);
+      this.signalRService.start(HubUrls.ChatHub);
       this.toastrService.message("Google üzerinden giriş başarıyla sağlanmıştır.", "Giriş Başarılı", {
         messageType: ToastrMessageType.Success,
         position: ToastrPosition.TopRight
@@ -99,7 +97,7 @@ export class UserAuthService {
       localStorage.setItem("accessToken", tokenResponse.token.accessToken);
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
 
-      this.signalRService.start(HubUrls.AdminHub);
+      this.signalRService.start(HubUrls.ChatHub);
 
       this.toastrService.message("Facebook üzerinden giriş başarıyla sağlanmıştır.", "Giriş Başarılı", {
         messageType: ToastrMessageType.Success,
