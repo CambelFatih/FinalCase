@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
 
+
+
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -17,6 +19,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
     CommonModule,
     RouterModule,
     MatListModule,
+    MatExpansionModule
   ],
   exports: [
     HeaderComponent,

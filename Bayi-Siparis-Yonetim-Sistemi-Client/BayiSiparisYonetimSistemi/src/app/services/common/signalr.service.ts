@@ -9,6 +9,11 @@ export class SignalRService {
   private hubConnections: Map<string, HubConnection> = new Map();
   constructor(@Inject("baseSignalRUrl") private baseSignalRUrl: string) { }
 
+
+getConnection(hubUrl: string): HubConnection {
+  return this.hubConnections.get(this.baseSignalRUrl + hubUrl);
+}
+
   start(hubUrl: string) {
     hubUrl = this.baseSignalRUrl + hubUrl;
 
@@ -31,15 +36,22 @@ export class SignalRService {
 
     hubConnection.onreconnected(connectionId => console.log("Reconnected"));
     hubConnection.onreconnecting(error => console.log("Reconnecting"));
-    hubConnection.onclose(error => console.log("Close reconnection"));
+    hubConnection.onclose(error => console.log("Close reconnection"));  
     return hubConnection;
   }
 
   invoke(hubUrl: string, procedureName: string, message: any, successCallBack?: (value) => void, errorCallBack?: (error) => void) {
-    this.start(hubUrl).invoke(procedureName, message)
-      .then(successCallBack)
-      .catch(errorCallBack);
+    const hubConnection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);
+    
+    if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
+      hubConnection.invoke(procedureName, message)
+        .then(successCallBack)
+        .catch(errorCallBack);
+    } else {
+      errorCallBack(new Error("Hub connection is not in the 'Connected' state."));
+    }
   }
+  
 
 sendMessageToCustomer(hubUrl: string, customerId: string, message: string) {
   this.invoke(hubUrl, 'SendMessageToCustomer', { customerId, message },
@@ -47,11 +59,32 @@ sendMessageToCustomer(hubUrl: string, customerId: string, message: string) {
     (error) => console.log("Failed to send message to customer:", error));
 }
 
-
+// signalr.service.ts
+sendMessageToAdmin(hubUrl: string, message: string) {
+  const fullHubUrl = this.baseSignalRUrl + hubUrl;
+  const hubConnection = this.hubConnections.get(fullHubUrl);
+  
+  if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
+    this.invoke(hubUrl, 'SendMessageToAdmin', message,
+      () => console.log("Message sent to admin."),
+      (error) => console.log("Failed to send message to admin:", error));
+  } else {
+    console.log("Connection not in Connected state. Trying to reconnect...");
+    // Burada yeniden bağlantı kurmayı deneyebilirsiniz veya kullanıcıya bir hata mesajı gösterebilirsiniz.
+  }
+}
   on(hubUrl: string, procedureName: string, callBack: (...message: any) => void) {
     this.start(hubUrl).on(procedureName, callBack);
   }
   
+stopConnection(hubUrl: string): void {
+  const connection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);
+  if (connection && connection.state === HubConnectionState.Connected) {
+    connection.stop().then(() => console.log(`Connection to ${hubUrl} stopped`));
+  }
+}
+
+
   disconnect(hubUrl: string): void {
     const fullHubUrl = this.baseSignalRUrl + hubUrl;
     const hubConnection = this.hubConnections.get(fullHubUrl);

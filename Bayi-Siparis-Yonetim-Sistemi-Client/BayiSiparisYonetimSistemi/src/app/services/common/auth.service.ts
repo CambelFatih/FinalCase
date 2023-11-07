@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Injectable({
@@ -8,6 +9,8 @@ export class AuthService {
 
   constructor(private jwtHelper: JwtHelperService) { }
 
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(_isAuthenticated);
+  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   identityCheck() {
     const token: string = localStorage.getItem("accessToken");
 
@@ -21,6 +24,7 @@ export class AuthService {
     }
 
     _isAuthenticated = token != null && !expired;
+    this.isAuthenticatedSubject.next(_isAuthenticated);
   }
 
   get isAuthenticated(): boolean {

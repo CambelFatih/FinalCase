@@ -20,6 +20,8 @@ import { LoginComponent } from './ui/components/login/login.component';
 import { FacebookLoginProvider, GoogleLoginProvider, SocialAuthServiceConfig, SocialLoginModule } from '@abacritt/angularx-social-login';
 import { HttpErrorHandlerInterceptorService } from './services/common/http-error-handler-interceptor.service';
 import { DynamicLoadComponentDirective } from './directives/common/dynamic-load-component.directive';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,8 @@ import { DynamicLoadComponentDirective } from './directives/common/dynamic-load-
   ],
   imports: [
     BrowserModule,
+    FormsModule,
+    MatExpansionModule,
     BrowserAnimationsModule,
     AppRoutingModule,
     AdminModule, UiModule,

@@ -86,3 +86,32 @@
     <ng-template appDynamicLoadComponent></ng-template>
   </div>
 </div>
+
+<app-footer>
+  
+  <mat-accordion>
+    <mat-accordion class="footer-expansion-panel">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>        
+            <mat-panel-title>
+              Müşteri Hizmetleri
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          
+          <ng-template matExpansionPanelContent>
+      <!-- Mesaj gönderme formu -->
+      <form (ngSubmit)="sendMessage()">
+        <input type="text" [(ngModel)]="message" name="message" placeholder="Mesajınızı yazın" required>
+        <button type="submit">Gönder</button>
+      </form>
+
+      <!-- Mesajların listelendiği alan -->
+      <div *ngFor="let msg of messages">
+        <p>{{ msg }}</p>
+      </div>
+          </ng-template>
+        </mat-expansion-panel>
+      </mat-accordion>
+  </mat-accordion>
+
+</app-footer>

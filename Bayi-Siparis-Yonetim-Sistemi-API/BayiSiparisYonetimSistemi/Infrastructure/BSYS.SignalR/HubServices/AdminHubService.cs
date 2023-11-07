@@ -10,10 +10,10 @@ public class AdminHubService : IAdminHubService
     private readonly ConcurrentDictionary<string, Tuple<string, string>> customerToAdminMapping = new ConcurrentDictionary<string, Tuple<string, string>>();
     private readonly ConcurrentDictionary<string, int> adminCustomerCount = new ConcurrentDictionary<string, int>();
 
-    public string AssignAdminToCustomer(string customerId)
+    public async Task<string> AssignAdminToCustomer(string customerId)
     {
         // En az yükü olan admini bulma mantığı
-        var adminId = FindLeastBusyAdmin();
+        var adminId =  await FindLeastBusyAdmin();
         if (adminId == null)
         {
             return null; // Eğer uygun admin yoksa null döndür
@@ -26,7 +26,7 @@ public class AdminHubService : IAdminHubService
         return adminId; // Grup ismini döndür
     }
 
-    public void DisconnectCustomerFromAdmin(string customerId)
+    public async void DisconnectCustomerFromAdmin(string customerId)
     {
         // Eğer müşteri eşleştirilmişse, bağlantıyı kes
         Tuple<string, string> adminId;
@@ -36,7 +36,7 @@ public class AdminHubService : IAdminHubService
         }
     }
 
-    public string GetCustomerConnectionId(string customerId)
+    public async Task<string> GetCustomerConnectionId(string customerId)
     {
         // Müşterinin bağlantı ID'sini döndürür
         Tuple<string, string> adminToCustomer;
@@ -47,52 +47,52 @@ public class AdminHubService : IAdminHubService
         return null;
     }
 
-    public bool IsAdminActive(string userId)
+    public async Task<bool> IsAdminActive(string userId)
     {
         return activeAdmins.Values.Any(id => id == userId);
     }
 
-    public void RemoveInactiveAdmin(string connectionId)
+    public async void RemoveInactiveAdmin(string connectionId)
     {
         // Eğer kullanıcı activeAdmins sözlüğünde yer alıyorsa kullanıcıyı aktif admin listesinden çıkarır.
         activeAdmins.TryRemove(connectionId, out _); // 'out _' kullanarak geri dönen değeri yok sayabiliriz.
     }
 
-    public void AddActiveAdmin(string connectionId, string userId)
+    public async void AddActiveAdmin(string connectionId, string userId)
     {
         // Eğer connectionId mevcut değilse yeni bir kayıt ekler, varsa mevcut kaydı günceller.
         activeAdmins.AddOrUpdate(connectionId, userId, (key, oldValue) => userId);
     }
 
-    public bool IsUserActive(string userId)
+    public async Task<bool> IsUserActive(string userId)
     {
         return activeUsers.Values.Any(id => id == userId);
     }
 
-    public void RemoveInactiveUser(string connectionId)
+    public async void RemoveInactiveUser(string connectionId)
     {
         // Eğer kullanıcı activeUsers sözlüğünde yer alıyorsa kullanıcıyı aktif kullanıcı listesinden çıkarır.
         activeUsers.TryRemove(connectionId, out _); // 'out _' kullanarak geri dönen değeri yok sayabiliriz.
     }
 
-    public void AddActiveUser(string connectionId, string userId)
+    public async void AddActiveUser(string connectionId, string userId)
     {
         // Eğer connectionId mevcut değilse yeni bir kayıt ekler, varsa mevcut kaydı günceller.
         activeUsers.AddOrUpdate(connectionId, userId, (key, oldValue) => userId);
     }
 
-    private string FindLeastBusyAdmin()
+    private async Task<string> FindLeastBusyAdmin()
     {
         // Adminler arasından en az yükü olanı bulma mantığı
         return adminCustomerCount.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
     }
 
-    private void IncrementAdminCustomerCount(string adminId)
+    private async void IncrementAdminCustomerCount(string adminId)
     {
         adminCustomerCount.AddOrUpdate(adminId, 1, (key, oldValue) => oldValue + 1);
     }
 
-    private void DecrementAdminCustomerCount(string adminId)
+    private async void DecrementAdminCustomerCount(string adminId)
     {
         int currentCount;
         if (adminCustomerCount.TryGetValue(adminId, out currentCount))
@@ -102,3 +102,4 @@ public class AdminHubService : IAdminHubService
     }
 
 }
+

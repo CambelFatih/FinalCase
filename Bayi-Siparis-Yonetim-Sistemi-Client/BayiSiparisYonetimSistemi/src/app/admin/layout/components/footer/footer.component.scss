@@ -1,0 +1,19 @@
+/* CSS dosyanızda */
+.footer-expansion-panel {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 300px; /* İstediğiniz genişliği ayarlayabilirsiniz */
+    z-index: 1000; /* Sayfa içeriğinin üstünde olması için */
+  }
+  
+  .mat-expansion-panel-content {
+    display: flex;
+    flex-direction: column-reverse; /* İçeriği yukarı doğru genişlet */
+  }
+  
+  /* Panel açıldığında sayfanın geri kalanı kaydırılmamalı */
+  .mat-content {
+    overflow: visible !important;
+  }
+  

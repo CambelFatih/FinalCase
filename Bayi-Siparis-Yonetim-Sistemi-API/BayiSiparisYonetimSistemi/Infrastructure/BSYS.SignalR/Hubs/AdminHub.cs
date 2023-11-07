@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using BSYS.Application.Abstractions.Hubs;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace BSYS.SignalR.Hubs;
 
-//[Authorize(AuthenticationSchemes = "Admin")]
 public class AdminHub : Hub
 {
     private readonly IAdminHubService _adminHubService;
@@ -19,7 +17,7 @@ public class AdminHub : Hub
     {
         string userId = Context.User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
         var rolesClaims = Context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();    
-        if (HasAdminRole(rolesClaims))
+        if (await HasAdminRole(rolesClaims))
         {
             _adminHubService.AddActiveAdmin(Context.ConnectionId, userId);
         }
@@ -33,7 +31,7 @@ public class AdminHub : Hub
     public override async Task OnDisconnectedAsync(Exception exception)
     {
         var rolesClaims = Context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
-        if (HasAdminRole(rolesClaims))
+        if (await HasAdminRole(rolesClaims))
         {
             _adminHubService.RemoveInactiveAdmin(Context.ConnectionId);
         }
@@ -41,18 +39,18 @@ public class AdminHub : Hub
             _adminHubService.RemoveInactiveUser(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
-    public async Task SendMessageToAdmin(string message)
+    public async Task SendMessageToAdminAsync(string message)
     {
         var userId = Context.UserIdentifier;
         var rolesClaims = Context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
 
         // Kullanıcının müşteri olup olmadığını kontrol et
-        if (!HasAdminRole(rolesClaims))
+        if (await HasAdminRole(rolesClaims)==false)
         {
             await Clients.Caller.SendAsync("Unauthorized", "Bu işlemi sadece müşteriler gerçekleştirebilir.");
             return;
         }
-        var adminId = _adminHubService.AssignAdminToCustomer(userId);
+        var adminId = await _adminHubService.AssignAdminToCustomer(userId);
         if (adminId == null)
         {
             await Clients.Caller.SendAsync("NoAdminAvailable", "Şu anda hiçbir admin aktif değil. Lütfen daha sonra tekrar deneyiniz.");
@@ -61,16 +59,16 @@ public class AdminHub : Hub
         {
             // Müşteri ve admini aynı gruba ekle
             await Groups.AddToGroupAsync(Context.ConnectionId, adminId);
-            await Clients.Group(adminId).SendAsync("ReceiveMessage", message, userId);
+            await Clients.Group(adminId).SendAsync(ReceiveFunctionNames.MessageFromCustomer, message, userId);
         }
     }
-    public async Task SendMessageToCustomer(string customerId, string message)
+    public async Task SendMessageToCustomerAsync(string customerId, string message)
     {
         // Adminin müşteriye mesaj göndermesini sağla
-        var connectionId = _adminHubService.GetCustomerConnectionId(customerId);
+        var connectionId = await _adminHubService.GetCustomerConnectionId(customerId);
         if (connectionId != null)
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveMessageFromAdmin", message);
+            await Clients.Client(connectionId).SendAsync(ReceiveFunctionNames.MessageFromAdmin, message);
         }
         else
         {
@@ -78,7 +76,7 @@ public class AdminHub : Hub
         }
     }
 
-    private bool HasAdminRole(List<Claim> rolesClaims)
+    private async Task<bool> HasAdminRole(List<Claim> rolesClaims)
     {
         return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Admin", StringComparison.OrdinalIgnoreCase));
     }
