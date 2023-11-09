@@ -66,6 +66,7 @@ public class TokenHandler : ITokenHandler
             new(ClaimTypes.Name, user.UserName.ToString()),
             new(ClaimTypes.Email, user.Email.ToString()),
             new Claim("Id", user.Id.ToString()),
+            new Claim("NameSurname", user.NameSurname.ToString()),            
         };
         // Her bir rol için bir Claim ekleyin
         foreach (var role in roles)

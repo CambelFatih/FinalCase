@@ -6,12 +6,21 @@ namespace BSYS.SignalR.HubServices;
 
 public class ChatHubService : IChatHubService
 {
-    private readonly ConcurrentDictionary<string, string> activeAdmins = new ConcurrentDictionary<string, string>();
-    private readonly ConcurrentDictionary<string, string> activeUsers = new ConcurrentDictionary<string, string>();
-    private readonly ConcurrentDictionary<string, Tuple<string, string>> customerToAdminMapping = new ConcurrentDictionary<string, Tuple<string, string>>();
-    private readonly ConcurrentDictionary<string, int> adminCustomerCount = new ConcurrentDictionary<string, int>();
+    private  string adminconnectionid;
+    private  ConcurrentDictionary<string, string> activeAdmins = new ConcurrentDictionary<string, string>();
+    private  ConcurrentDictionary<string, string> activeUsers = new ConcurrentDictionary<string, string>();
+    private  ConcurrentDictionary<string, Tuple<string, string>> customerToAdminMapping = new ConcurrentDictionary<string, Tuple<string, string>>();
+    private  ConcurrentDictionary<string, int> adminCustomerCount = new ConcurrentDictionary<string, int>();
 
+    public async void SetAdminConnectionIdFromProperty(string id)
+    {
+        adminconnectionid = id;
+    }
 
+    public async Task<string> GetAdminConnectionIdFromProperty()
+    {
+        return adminconnectionid;
+    }
     public async Task<string> GetAdminConnectionId()
     {
         string singleAdminConnectionId = activeAdmins.Keys.SingleOrDefault();

@@ -9,6 +9,7 @@ import { SignalRService } from '../signalr.service';
 import { AuthService } from '../auth.service';
 import { HubUrls } from 'src/app/constants/hub-urls';
 import { ReceiveFunctions } from 'src/app/constants/receive-functions';
+import { MessageInfo } from 'src/app/contracts/chat/chat';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class UserAuthService {
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
 
       this.signalRService.start(HubUrls.ChatHub);
-      
+
       this.toastrService.message("Kullanıcı girişi başarıyla sağlanmıştır.", "Giriş Başarılı", {
         messageType: ToastrMessageType.Success,
         position: ToastrPosition.TopRight
@@ -55,7 +56,6 @@ export class UserAuthService {
       callBackFunction(tokenResponse ? true : false);
     } catch {
 
-      if(this.authService.isAdmin())
       this.signalRService.disconnect(HubUrls.ChatHub);
 
       callBackFunction(false);
@@ -74,8 +74,8 @@ export class UserAuthService {
       localStorage.setItem("accessToken", tokenResponse.token.accessToken);
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
 
-     // this.signalRService.start(HubUrls.OrderHub)
       this.signalRService.start(HubUrls.ChatHub);
+
       this.toastrService.message("Google üzerinden giriş başarıyla sağlanmıştır.", "Giriş Başarılı", {
         messageType: ToastrMessageType.Success,
         position: ToastrPosition.TopRight

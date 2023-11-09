@@ -8,6 +8,8 @@ namespace BSYS.Application.Abstractions.Hubs;
 
 public interface IChatHubService
 {
+    void SetAdminConnectionIdFromProperty(string id);
+    Task<string> GetAdminConnectionIdFromProperty();
     Task<string> GetAdminConnectionId();
     Task<string> AssignAdminToCustomer(string customerId);
     void AddActiveUser(string connectionId, string userId);

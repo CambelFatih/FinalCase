@@ -9,8 +9,13 @@ export class AuthService {
 
   constructor(private jwtHelper: JwtHelperService) { }
 
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(_isAuthenticated);
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+
+  updateAuthenticationStatus(isAuthenticated: boolean): void {
+    this.isAuthenticatedSubject.next(isAuthenticated);
+  }
+
   identityCheck() {
     const token: string = localStorage.getItem("accessToken");
 
@@ -24,7 +29,14 @@ export class AuthService {
     }
 
     _isAuthenticated = token != null && !expired;
-    this.isAuthenticatedSubject.next(_isAuthenticated);
+    if(_isAuthenticated)
+    {
+      this.updateAuthenticationStatus(true);
+    }
+    else
+    {
+      this.updateAuthenticationStatus(false);
+    }
   }
 
   get isAuthenticated(): boolean {

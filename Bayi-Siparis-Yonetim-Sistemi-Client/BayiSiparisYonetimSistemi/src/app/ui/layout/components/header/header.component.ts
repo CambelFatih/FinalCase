@@ -18,7 +18,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
   signOut() {
-    this.signalRService.disconnect(HubUrls.AdminHub);
+    this.authService.updateAuthenticationStatus(false);
+    this.signalRService.disconnect(HubUrls.ChatHub);
     localStorage.removeItem("accessToken");
     this.authService.identityCheck();
     this.router.navigate([""]);

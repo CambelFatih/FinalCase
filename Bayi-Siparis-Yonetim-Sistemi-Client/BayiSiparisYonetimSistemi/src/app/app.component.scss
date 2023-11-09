@@ -16,4 +16,10 @@
   .mat-content {
     overflow: visible !important;
   }
-  
+/* CSS dosyanızda */
+.chat-container {
+  height: 400px; /* İstediğiniz sabit yüksekliği burada ayarlayın */
+  overflow-y: auto; /* Yalnızca dikey scrollbar görüntüle */
+  display: flex;
+  flex-direction: column-reverse; /* Mesajları aşağıdan yukarıya doğru görüntüle */
+}

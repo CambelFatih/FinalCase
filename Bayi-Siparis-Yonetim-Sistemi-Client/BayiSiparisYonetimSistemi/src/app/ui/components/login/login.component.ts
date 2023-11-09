@@ -9,6 +9,11 @@ import { AuthService } from '../../../services/common/auth.service';
 import { HttpClientService } from '../../../services/common/http-client.service';
 import { UserAuthService } from '../../../services/common/models/user-auth.service';
 import { UserService } from '../../../services/common/models/user.service';
+import { HubUrls } from 'src/app/constants/hub-urls';
+import { SignalRService } from 'src/app/services/common/signalr.service';
+import { ReceiveFunctions } from 'src/app/constants/receive-functions';
+import { ChatService } from 'src/app/services/common/chat.service';
+import { MessageInfo } from 'src/app/contracts/chat/chat';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +22,7 @@ import { UserService } from '../../../services/common/models/user.service';
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 
-  constructor(private userAuthService: UserAuthService, spinner: NgxSpinnerService, private authService: AuthService, private activatedRoute: ActivatedRoute, private router: Router, private socialAuthService: SocialAuthService) {
+  constructor(private userAuthService: UserAuthService, spinner: NgxSpinnerService, private authService: AuthService, private activatedRoute: ActivatedRoute, private router: Router, private socialAuthService: SocialAuthService,private signalRService: SignalRService,private chatService: ChatService) {
     super(spinner)
     socialAuthService.authState.subscribe(async (user: SocialUser) => {
       console.log(user)
@@ -40,6 +45,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
   }
 
   async login(usernameOrEmail: string, password: string) {

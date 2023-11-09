@@ -88,30 +88,52 @@
 </div>
 
 <app-footer>
-  
   <mat-accordion>
     <mat-accordion class="footer-expansion-panel">
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>        
-            <mat-panel-title>
-              Müşteri Hizmetleri
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          
-          <ng-template matExpansionPanelContent>
-      <!-- Mesaj gönderme formu -->
-      <form (ngSubmit)="sendMessage()">
-        <input type="text" [(ngModel)]="message" name="message" placeholder="Mesajınızı yazın" required>
-        <button type="submit">Gönder</button>
-      </form>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>        
+          <mat-panel-title>
+            Müşteri Hizmetleri
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-      <!-- Mesajların listelendiği alan -->
-      <div *ngFor="let msg of messages">
-        <p>{{ msg }}</p>
-      </div>
-          </ng-template>
-        </mat-expansion-panel>
-      </mat-accordion>
+        <!-- Yönetici ise kullanıcı listesini göster -->
+        <div *ngIf="this.authService.isAdmin()">
+          <div>admin çalışıyor</div>
+          <button *ngFor="let user of users" (click)="selectUser(user)">
+            <p>{{ user }}</p>
+          </button>
+          <div class="chat-container">
+            <div>chat container çalışıyor</div>
+            <div *ngFor="let msgDetail of messageInfoDetail">
+              <div *ngIf="msgDetail.userName === selectedUserName">
+                <div *ngFor="let msg of msgDetail.message">
+                  <p>{{ msg }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="!this.authService.isAdmin()">
+          <div>bayi çalışıyor</div>
+          <!-- Admin değilse yapılacak işlemler buraya gelebilir -->     
+          <div class="chat-container">
+            <!-- Mesajların listelendiği alan -->
+            <div>chat container çalışıyor</div>
+            <div *ngFor="let msg of messages.reverse()">
+              <p>{{ msg }}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Mesaj gönderme formu -->
+        <form (ngSubmit)="sendMessage()">
+          <input type="text" [(ngModel)]="message" name="message" placeholder="Mesajınızı yazın" required>
+          <button type="submit">Gönder</button>
+        </form>
+        <ng-template matExpansionPanelContent>
+        </ng-template>
+      </mat-expansion-panel>
+    </mat-accordion>
   </mat-accordion>
-
 </app-footer>
