@@ -2,18 +2,10 @@ import { FacebookLoginProvider, SocialAuthService, SocialUser } from '@abacritt/
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { async } from 'rxjs';
 import { BaseComponent, SpinnerType } from '../../../base/base.component';
-import { TokenResponse } from '../../../contracts/token/tokenResponse';
 import { AuthService } from '../../../services/common/auth.service';
-import { HttpClientService } from '../../../services/common/http-client.service';
 import { UserAuthService } from '../../../services/common/models/user-auth.service';
-import { UserService } from '../../../services/common/models/user.service';
-import { HubUrls } from 'src/app/constants/hub-urls';
-import { SignalRService } from 'src/app/services/common/signalr.service';
-import { ReceiveFunctions } from 'src/app/constants/receive-functions';
-import { ChatService } from 'src/app/services/common/chat.service';
-import { MessageInfo } from 'src/app/contracts/chat/chat';
+
 
 @Component({
   selector: 'app-login',
@@ -22,7 +14,7 @@ import { MessageInfo } from 'src/app/contracts/chat/chat';
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 
-  constructor(private userAuthService: UserAuthService, spinner: NgxSpinnerService, private authService: AuthService, private activatedRoute: ActivatedRoute, private router: Router, private socialAuthService: SocialAuthService,private signalRService: SignalRService,private chatService: ChatService) {
+  constructor(private userAuthService: UserAuthService, spinner: NgxSpinnerService, private authService: AuthService, private activatedRoute: ActivatedRoute, private router: Router, private socialAuthService: SocialAuthService) {
     super(spinner)
     socialAuthService.authState.subscribe(async (user: SocialUser) => {
       console.log(user)
@@ -52,6 +44,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
     this.showSpinner(SpinnerType.BallAtom);
     await this.userAuthService.login(usernameOrEmail, password, () => {
       this.authService.identityCheck();
+      location.reload();
       this.activatedRoute.queryParams.subscribe(params => {
         const returnUrl: string = params["returnUrl"];
         if (returnUrl)

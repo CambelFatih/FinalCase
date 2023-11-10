@@ -53,13 +53,13 @@ export class AppComponent implements OnInit {
   private setupSignalR() {
     if(!this.authService.isAdmin())
     {
-      console.log("log deneme Authenticated Customer");
+      console.log("Authenticated Customer");
       this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromAdmin, (receivedMessage: string) => {
         this.messages.push(receivedMessage);
       });
     }
     else{
-      console.log("log deneme Authenticated Admin");
+      console.log("Authenticated Admin");
       this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromCustomer, (receivedMessage: MessageInfo) => {
         this.messages.push(receivedMessage.message);     
         console.log(this.processMessage(receivedMessage));    
@@ -130,6 +130,7 @@ export class AppComponent implements OnInit {
     this.signalRService.disconnect(HubUrls.ChatHub);
     localStorage.removeItem("accessToken");
     this.authService.identityCheck();
+    location.reload();
     this.router.navigate([""]);
     this.toastrService.message("Oturum kapatılmıştır!", "Oturum Kapatıldı", {
       messageType: ToastrMessageType.Warning,

@@ -7,12 +7,10 @@ namespace BSYS.Application.Features.Commands.Product.CreateProduct;
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommandRequest, CreateProductCommandResponse>
 {
-    private readonly IProductHubService _productHubService;
     private readonly IUnitofWork _uow;
 
-    public CreateProductCommandHandler(IProductHubService productHubService, IUnitofWork uow)
+    public CreateProductCommandHandler( IUnitofWork uow)
     {
-        _productHubService = productHubService;
         _uow = uow;
     }
 
@@ -25,7 +23,6 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommandR
             Stock = request.Stock
         });
         await _uow.ProductWriteRepository.SaveAsync();
-        await _productHubService.ProductAddedMessageAsync($"{request.Name} isminde ürün eklenmiştir.");
         return new();
     }
 }

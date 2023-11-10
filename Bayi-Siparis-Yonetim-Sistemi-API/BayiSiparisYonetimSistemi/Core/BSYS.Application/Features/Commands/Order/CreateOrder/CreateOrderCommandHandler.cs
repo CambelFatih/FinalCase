@@ -9,13 +9,11 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommandReque
 {
     private readonly IOrderService _orderService;
     private readonly IBasketService _basketService;
-    private readonly IOrderHubService _orderHubService;
 
-    public CreateOrderCommandHandler(IOrderService orderService, IBasketService basketService, IOrderHubService orderHubService)
+    public CreateOrderCommandHandler(IOrderService orderService, IBasketService basketService)
     {
         _orderService = orderService;
         _basketService = basketService;
-        _orderHubService = orderHubService;
     }
 
     public async Task<CreateOrderCommandResponse> Handle(CreateOrderCommandRequest request, CancellationToken cancellationToken)
@@ -26,9 +24,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommandReque
             Description = request.Description,
             BasketId = _basketService.GetUserActiveBasket?.Id.ToString()
         });
-
-        await _orderHubService.OrderAddedMessageAsync("Heyy, yeni bir sipariş geldi! :) ");
-
         return new();
     }
 }

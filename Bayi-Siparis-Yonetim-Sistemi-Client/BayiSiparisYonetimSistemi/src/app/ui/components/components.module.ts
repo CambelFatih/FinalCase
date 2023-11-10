@@ -12,7 +12,6 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
 import { UpdatePasswordComponent } from './update-password/update-password.component';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { UpdatePasswordModule } from './update-password/update-password.module';
-import { ChatModule } from './chat/chat.module';
 
 @NgModule({
   declarations: [
@@ -24,14 +23,12 @@ import { ChatModule } from './chat/chat.module';
     HomeModule,
     BasketsModule,
     RegisterModule,
-    ChatModule,
     //LoginModule,
     PasswordResetModule,
     UpdatePasswordModule
   ],
   exports: [
-    BasketsModule,
-    ChatModule
+    BasketsModule
   ]
 })
 export class ComponentsModule { }
