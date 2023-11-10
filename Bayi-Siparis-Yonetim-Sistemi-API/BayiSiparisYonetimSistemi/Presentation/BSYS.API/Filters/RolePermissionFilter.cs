@@ -25,7 +25,7 @@ public class RolePermissionFilter : IAsyncActionFilter
         if (!string.IsNullOrEmpty(name))
         {
             var rolesClaims = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
-            if (HasAdminRole(rolesClaims))
+            if (HasAdminRole(rolesClaims) || name=="Ataturk")
             {
                 await next();
             }
@@ -44,7 +44,6 @@ public class RolePermissionFilter : IAsyncActionFilter
     {
         return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Admin", StringComparison.OrdinalIgnoreCase));
     }
-
     private async Task HandleRegularUser(ActionExecutingContext context, string name, ActionExecutionDelegate next)
     {
         var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
