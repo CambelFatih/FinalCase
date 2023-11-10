@@ -1,6 +1,5 @@
 ﻿using BSYS.Application.Abstractions.Services;
 using BSYS.Application.CustomAttributes;
-using BSYS.Persistence.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;

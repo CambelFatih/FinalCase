@@ -1,128 +1,113 @@
-﻿using System.Collections.Concurrent;
-using System.Text;
-using BSYS.Application.Abstractions.Hubs;
+﻿using BSYS.Application.Abstractions.Hubs;
+using System.Security.Claims;
+using static BSYS.Domain.Base.Chat.ChatInfo;
 
 namespace BSYS.SignalR.HubServices;
 
 public class ChatHubService : IChatHubService
 {
-    private  string adminconnectionid;
-    private  ConcurrentDictionary<string, string> activeAdmins = new ConcurrentDictionary<string, string>();
-    private  ConcurrentDictionary<string, string> activeUsers = new ConcurrentDictionary<string, string>();
-    private  ConcurrentDictionary<string, Tuple<string, string>> customerToAdminMapping = new ConcurrentDictionary<string, Tuple<string, string>>();
-    private  ConcurrentDictionary<string, int> adminCustomerCount = new ConcurrentDictionary<string, int>();
+    private  List<Admin> _admins;
 
-    public async void SetAdminConnectionIdFromProperty(string id)
+    public async void RemoveAdminAsync(string userName)
     {
-        adminconnectionid = id;
-    }
+        if (_admins != null)
+        {
+            // UserName ile aynı isimde admin var mı kontrolü
+            var adminToRemove = _admins.FirstOrDefault(admin => admin.UserName == userName);
 
-    public async Task<string> GetAdminConnectionIdFromProperty()
-    {
-        return adminconnectionid;
-    }
-    public async Task<string> GetAdminConnectionId()
-    {
-        string singleAdminConnectionId = activeAdmins.Keys.SingleOrDefault();
-        if (!string.IsNullOrEmpty(singleAdminConnectionId))
-        {
-            return singleAdminConnectionId;
-        }
-        else
-        {
-            return "Null";
+            if (adminToRemove != null)
+            {
+                // Admin'i listeden kaldır
+                _admins.Remove(adminToRemove);
+            }
         }
     }
-    public async Task<string> AssignAdminToCustomer(string customerId)
+    public async Task<string> GetAdminConnectionIdByBayiUserName(string bayiUserName)
     {
-        // En az yükü olan admini bulma mantığı
-        var adminId =  await FindLeastBusyAdmin();
-        if (adminId == null)
-        {
-            return null; // Eğer uygun admin yoksa null döndür
-        }
+        var admin = _admins.FirstOrDefault(a => a.Bayiler?.Any(b => b.UserName == bayiUserName) == true);
 
-        // Müşteriyi adminle eşleştir ve grup ismi olarak adminId'yi kullan
-        customerToAdminMapping[customerId] = new Tuple<string, string>(adminId, adminId); // Grup ismi olarak adminId kullanılıyor
-        IncrementAdminCustomerCount(adminId); // Adminin yükünü artır
-
-        return adminId; // Grup ismini döndür
+        return admin?.ConnectionId;
     }
 
-    public async void DisconnectCustomerFromAdmin(string customerId)
+    public async Task<bool> HasActiveAdmin()
     {
-        // Eğer müşteri eşleştirilmişse, bağlantıyı kes
-        Tuple<string, string> adminId;
-        if (customerToAdminMapping.TryRemove(customerId, out adminId))
-        {
-            DecrementAdminCustomerCount(adminId.Item1); // Adminin yükünü azalt
-        }
+        return _admins.Any();
     }
-
-    public async Task<string> GetCustomerConnectionId(string customerId)
+    public async Task<string> AddBayiToMinLoadAdmin(string bayiUserName, string bayiConnectionId)
     {
-        // Müşterinin bağlantı ID'sini döndürür
-        Tuple<string, string> adminToCustomer;
-        if (customerToAdminMapping.TryGetValue(customerId, out adminToCustomer))
+        // Yükü en az olan admini bul
+        var minLoadAdmin = _admins.OrderBy(admin => admin.Load).FirstOrDefault();
+
+        if (minLoadAdmin != null)
         {
-            return adminToCustomer.Item2; // Müşterinin connectionId'si
+            // Bayiyi yükü en az olan adminin listesine ekle
+            minLoadAdmin.Bayiler ??= new List<Bayi>();
+            minLoadAdmin.Bayiler.Add(new Bayi { UserName = bayiUserName, ConnectionId = bayiConnectionId });
+
+            // Adminin yükünü ve bayi sayısını güncelle
+            minLoadAdmin.Load++;
+
+            // Bayiyi eklediğimiz adminin connectionId'sini döndür
+            return minLoadAdmin.ConnectionId;
         }
+
+        // Yükü en az olan admin bulunamazsa null döndür
         return null;
     }
-
-    public async Task<bool> IsAdminActive(string userId)
+    public async void RemoveBayiAndDecrementLoad(string bayiUserName)
     {
-        return activeAdmins.Values.Any(id => id == userId);
-    }
-
-    public async void RemoveInactiveAdmin(string connectionId)
-    {
-        // Eğer kullanıcı activeAdmins sözlüğünde yer alıyorsa kullanıcıyı aktif admin listesinden çıkarır.
-        activeAdmins.TryRemove(connectionId, out _); // 'out _' kullanarak geri dönen değeri yok sayabiliriz.
-    }
-
-    public async void AddActiveAdmin(string connectionId, string userId)
-    {
-        // Eğer connectionId mevcut değilse yeni bir kayıt ekler, varsa mevcut kaydı günceller.
-        activeAdmins.AddOrUpdate(connectionId, userId, (key, oldValue) => userId);
-    }
-
-    public async Task<bool> IsUserActive(string userId)
-    {
-        return activeUsers.Values.Any(id => id == userId);
-    }
-
-    public async void RemoveInactiveUser(string connectionId)
-    {
-        // Eğer kullanıcı activeUsers sözlüğünde yer alıyorsa kullanıcıyı aktif kullanıcı listesinden çıkarır.
-        activeUsers.TryRemove(connectionId, out _); // 'out _' kullanarak geri dönen değeri yok sayabiliriz.
-    }
-
-    public async void AddActiveUser(string connectionId, string userId)
-    {
-        // Eğer connectionId mevcut değilse yeni bir kayıt ekler, varsa mevcut kaydı günceller.
-        activeUsers.AddOrUpdate(connectionId, userId, (key, oldValue) => userId);
-    }
-
-    private async Task<string> FindLeastBusyAdmin()
-    {
-        // Adminler arasından en az yükü olanı bulma mantığı
-        return adminCustomerCount.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
-    }
-
-    private async void IncrementAdminCustomerCount(string adminId)
-    {
-        adminCustomerCount.AddOrUpdate(adminId, 1, (key, oldValue) => oldValue + 1);
-    }
-
-    private async void DecrementAdminCustomerCount(string adminId)
-    {
-        int currentCount;
-        if (adminCustomerCount.TryGetValue(adminId, out currentCount))
+        if (_admins != null && _admins.Any())
         {
-            adminCustomerCount.TryUpdate(adminId, currentCount - 1, currentCount);
+            foreach (var admin in _admins)
+            {
+                var bayiToRemove = admin.Bayiler.FirstOrDefault(bayi => bayi.UserName == bayiUserName);
+
+                if (bayiToRemove != null)
+                {
+                    admin.Bayiler.Remove(bayiToRemove);
+                    admin.Load--; // Bayi silindiğinde adminin yükünü azalt
+                    break; // Bayi bulundu, işlem tamamlandı
+                }
+            }
         }
     }
 
+    public async Task<bool> DoesBayiExistInAdmins(string bayiUserName)
+    {
+        return _admins.Any(admin => admin.Bayiler.Any(bayi => bayi.UserName == bayiUserName));
+    }
+    public async void CreateAdmin(string userName, string connectionId)
+    {
+        if (_admins == null)
+        {
+            _admins = new List<Admin>();
+        }
+
+        // UserName ile aynı isimde admin var mı kontrolü
+        if (_admins.Any(admin => admin.UserName == userName))
+        {
+            // Eğer aynı isimde admin varsa hiçbir işlem yapma
+            return;
+        }
+
+        var newAdmin = new Admin
+        {
+            UserName = userName,
+            ConnectionId = connectionId,
+            Load = 0,
+            Bayiler = new List<Bayi>()
+        };
+
+        _admins.Add(newAdmin); // Oluşturulan admin'i listeye ekle
+    }
+
+    public async Task<bool> HasBayiRole(List<Claim> rolesClaims)
+    {
+        return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Bayi", StringComparison.OrdinalIgnoreCase));
+    }
+    public async Task<bool> HasAdminRole(List<Claim> rolesClaims)
+    {
+        return rolesClaims.Any(roleClaim => roleClaim.Value.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+    }
 }
 

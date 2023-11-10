@@ -7,3 +7,5 @@ public class MessageInfo
     public string ConnectionId { get; set; }
     public string Message { get; set; }
 }
+
+
