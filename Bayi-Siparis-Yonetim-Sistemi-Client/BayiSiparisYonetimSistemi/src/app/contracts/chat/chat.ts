@@ -10,5 +10,6 @@ export class MessageInfo {
     userId: string = null;
     connectionId: string = null;
     message: string[] = null;
+    messageCount: number = 0;
   }
   

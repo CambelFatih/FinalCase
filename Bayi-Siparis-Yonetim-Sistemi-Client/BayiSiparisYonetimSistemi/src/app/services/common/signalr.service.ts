@@ -68,7 +68,8 @@ on(hubUrl: string, procedureName: string, callBack: (...message: any) => void) {
     this.start(hubUrl).on(procedureName, callBack);
   }
 }
-  invoke(hubUrl: string, procedureName: string, message: any, successCallBack?: (value) => void, errorCallBack?: (error) => void) {
+
+  invokeCustomer(hubUrl: string, procedureName: string, message: any, successCallBack?: (value) => void, errorCallBack?: (error) => void) {
     const hubConnection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);
     
     if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
@@ -80,7 +81,7 @@ on(hubUrl: string, procedureName: string, callBack: (...message: any) => void) {
       errorCallBack(new Error("Hub connection is not in the 'Connected' state."));
     }
   }
-  invoke2(hubUrl: string, procedureName: string, connectionId:string ,message: any,successCallBack?: (value) => void, errorCallBack?: (error) => void) {
+  invokeAdmin(hubUrl: string, procedureName: string, connectionId:string ,message: any,successCallBack?: (value) => void, errorCallBack?: (error) => void) {
     const hubConnection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);
     
     if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
@@ -92,27 +93,6 @@ on(hubUrl: string, procedureName: string, callBack: (...message: any) => void) {
       errorCallBack(new Error("Hub connection is not in the 'Connected' state."));
     }
   }
-
-sendMessageToCustomer(hubUrl: string, customerId: string, message: string) {
-  this.invoke(hubUrl, 'SendMessageToCustomer', { customerId, message },
-    () => console.log("Message sent to customer."),
-    (error) => console.log("Failed to send message to customer:", error));
-}
-
-// signalr.service.ts
-sendMessageToAdmin(hubUrl: string, message: string) {
-  const fullHubUrl = this.baseSignalRUrl + hubUrl;
-  const hubConnection = this.hubConnections.get(fullHubUrl);
-  
-  if (hubConnection && hubConnection.state === HubConnectionState.Connected) {
-    this.invoke(hubUrl, 'SendMessageToAdmin', message,
-      () => console.log("Message sent to admin."),
-      (error) => console.log("Failed to send message to admin:", error));
-  } else {
-    console.log("Connection not in Connected state. Trying to reconnect...");
-    // Burada yeniden bağlantı kurmayı deneyebilirsiniz veya kullanıcıya bir hata mesajı gösterebilirsiniz.
-  }
-}
   
 stopConnection(hubUrl: string): void {
   const connection = this.hubConnections.get(this.baseSignalRUrl + hubUrl);

@@ -54,10 +54,6 @@
               <a class="nav-link disabled">Disabled</a>
             </li>-->
           </ul>
-          <!--<form class="d-flex">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>-->
           <div class="d-flex">
             <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#basketModal" (click)="loadComponent()" type="submit">Sepet</button>
           </div>
@@ -99,12 +95,10 @@
 
         <!-- Yönetici ise kullanıcı listesini göster -->
         <div *ngIf="this.authService.isAdmin()">
-          <div>admin çalışıyor</div>
-          <button *ngFor="let user of users" (click)="selectUser(user)">
-            <p>{{ user }}</p>
+          <button *ngFor="let user of userNames" (click)="selectUser(user)">
+            <p>{{ user }}</p> <div class="messageCount">{{this.findMessageCountByUserName(user)}}</div>
           </button>
           <div class="chat-container">
-            <div>chat container çalışıyor</div>
             <div *ngFor="let msgDetail of messageInfoDetail">
               <div *ngIf="msgDetail.userName === selectedUserName">
                 <div *ngFor="let msg of msgDetail.message">
@@ -116,11 +110,9 @@
         </div>
         
         <div *ngIf="!this.authService.isAdmin()">
-          <div>bayi çalışıyor</div>
           <!-- Admin değilse yapılacak işlemler buraya gelebilir -->     
           <div class="chat-container">
             <!-- Mesajların listelendiği alan -->
-            <div>chat container çalışıyor</div>
             <div *ngFor="let msg of messages.reverse()">
               <p>{{ msg }}</p>
             </div>

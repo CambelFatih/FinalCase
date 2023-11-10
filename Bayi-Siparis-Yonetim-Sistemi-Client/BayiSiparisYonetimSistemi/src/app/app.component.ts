@@ -7,9 +7,7 @@ import { CustomToastrService, ToastrMessageType, ToastrPosition } from './servic
 import { SignalRService } from './services/common/signalr.service';
 import { HubUrls } from './constants/hub-urls';
 import { ReceiveFunctions } from './constants/receive-functions';
-import { AlertifyService} from './services/admin/alertify.service';
 import { SendFunctions } from './constants/send-functions';
-import { ChatService } from './services/common/chat.service';
 import { MessageInfo,MessageInfoDetail } from './contracts/chat/chat';
 
 declare var $: any
@@ -22,48 +20,53 @@ declare var $: any
 export class AppComponent implements OnInit {
   message: string = '';      // Kullanıcıdan alınacak mesaj
   isAdmin: boolean = false;  // Yönetici olup olmadığını tutacak özellik.
-  users: string[] = [];
+  userNames: string[] = [];
   messageInfoDetail: MessageInfoDetail[] = [];
   messages: string[] = [];
-  selectedUserName: string="null"; // Seçili müşterinin ID'si
+  selectedUserName: string="null"; // Seçili müşterinin name bilgisi
   @ViewChild(DynamicLoadComponentDirective, { static: true })
   dynamicLoadComponentDirective: DynamicLoadComponentDirective;
   title: string="BSYS-Client";
-  constructor(private chatService:ChatService ,private alertify: AlertifyService,private signalRService: SignalRService, public authService: AuthService, private toastrService: CustomToastrService, private router: Router, private dynamicLoadComponentService: DynamicLoadComponentService) {
-    authService.identityCheck();
+  constructor(private signalRService: SignalRService, public authService: AuthService, private toastrService: CustomToastrService, private router: Router, private dynamicLoadComponentService: DynamicLoadComponentService) {
+    authService.identityCheck(); 
+    if(this.authService.isAuthenticated)
+    {
+    }
   }
   ngOnInit(): void {
-    
+    //this.authService.identityCheck()
     this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
       console.log("Messages:", this.messages);
       console.log("MessageInfoDetail:", this.messageInfoDetail);
       if (isAuthenticated) {
         // Giriş yapıldıktan sonra yapılacak işlemler...
+        this.setupSignalR()
         console.log("Giriş yapıldı");
-        if(!this.authService.isAdmin())
-        {
-          console.log("log deneme Authenticated Customer");
-          this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromAdmin, (receivedMessage: string) => {
-            console.log(receivedMessage);
-            this.messages.push(receivedMessage);
-            
-          });
-        }
-        else{
-          console.log("log deneme Authenticated Admin");
-          this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromCustomer, (receivedMessage: MessageInfo) => {
-            console.log(receivedMessage.message);
-            console.log(this.messageInfoDetail);// sorun burada console.loglar hiçbirşey loglamıyor this.messageInfoDetail sanki böyle bir şey yokmuş gibi
-            this.messages.push(receivedMessage.message);     
-            console.log(this.processMessage(receivedMessage));    
-          });
-        } 
+
       } else {
         // Çıkış yapıldıktan sonra yapılacak işlemler...
         console.log("Çıkış yapıldı");
       }
     });
   }
+
+  private setupSignalR() {
+    if(!this.authService.isAdmin())
+    {
+      console.log("log deneme Authenticated Customer");
+      this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromAdmin, (receivedMessage: string) => {
+        this.messages.push(receivedMessage);
+      });
+    }
+    else{
+      console.log("log deneme Authenticated Admin");
+      this.signalRService.on(HubUrls.ChatHub, ReceiveFunctions.MessageFromCustomer, (receivedMessage: MessageInfo) => {
+        this.messages.push(receivedMessage.message);     
+        console.log(this.processMessage(receivedMessage));    
+      });
+    } 
+  }
+
   processMessage(message: MessageInfo): MessageInfoDetail[] {
     const existingDetail = this.messageInfoDetail.find(
       (detail) => detail.userId === message.userId
@@ -71,34 +74,51 @@ export class AppComponent implements OnInit {
 
     if (existingDetail) {
       existingDetail.message.push(message.userName+" : "+message.message);
+      if(this.selectedUserName!=existingDetail.userName)
+      existingDetail.messageCount +=1;
     } else {
       const newDetail = new MessageInfoDetail();
       newDetail.userName = message.userName;
       newDetail.userId = message.userId;
       newDetail.connectionId = message.connectionId;
       newDetail.message = [message.userName+" : "+message.message];
+      newDetail.messageCount +=1;
 
       this.messageInfoDetail.push(newDetail);
-      this.users.push(message.userName);  
+      this.userNames.push(message.userName);  
     }
 
     return this.messageInfoDetail;
   }
-
-  findMessageByUserName(id:string):string[]{
+  adminSendMessageHandleByUserName(name:string,message:string){
     const existingDetail = this.messageInfoDetail.find(
-      (detail) => detail.userId === id
+      (detail) => detail.userName === name
     );
     if(existingDetail){
-      return existingDetail.message;
+       existingDetail.message.push(message);
     }
-    let empty: string[]=[];
-    empty[0]="mesaj yok"
-    return empty;
   }
-  findConnectionIdByUserName(id:string):string{
+  findMessageCountByUserName(name:string):number
+  {
     const existingDetail = this.messageInfoDetail.find(
-      (detail) => detail.userName === id
+      (detail) => detail.userName === name
+    );
+    if(existingDetail){
+       return existingDetail.messageCount;
+    }
+    return 0;
+  }
+  changeMessageCountByUserName(name:string){
+    const existingDetail = this.messageInfoDetail.find(
+      (detail) => detail.userName === name
+    );
+    if(existingDetail){
+       existingDetail.messageCount=0;
+    }
+  }
+  findConnectionIdByUserName(name:string):string{
+    const existingDetail = this.messageInfoDetail.find(
+      (detail) => detail.userName === name
     );
     if(existingDetail){
       return existingDetail.connectionId;
@@ -130,20 +150,16 @@ export class AppComponent implements OnInit {
       // Eğer kullanıcı admin ise, müşteriye mesaj gönder
       console.log(this.findConnectionIdByUserName(this.selectedUserName));
       let connectionId: string=this.findConnectionIdByUserName(this.selectedUserName);
-      this.signalRService.invoke2(HubUrls.ChatHub,SendFunctions.MessageToCustomerSendFunction,connectionId, this.message);
-      this.messages.push("Sen : "+this.message);
+      this.signalRService.invokeAdmin(HubUrls.ChatHub,SendFunctions.MessageToCustomerSendFunction,connectionId, this.message);
+      this.adminSendMessageHandleByUserName(this.selectedUserName,"Sen : "+this.message);
       console.log('Message sent successfully');
       this.message = '';
     } else {
-      this.signalRService.invoke(HubUrls.ChatHub, SendFunctions.MessageToAdminSendFunction, this.message,
+      this.signalRService.invokeCustomer(HubUrls.ChatHub, SendFunctions.MessageToAdminSendFunction, this.message,
         () => {
           this.messages.push("Sen : "+this.message);
           console.log('Message sent successfully');
           this.message = '';
-          this.toastrService.message('User veya Bayi Mesaj Gönderdi', 'Mesaj Admine iletildi.', {
-            messageType: ToastrMessageType.Info,
-            position: ToastrPosition.TopRight
-          });
         },
         (error) => {
           console.log('Failed to send message:', error);
@@ -153,6 +169,10 @@ export class AppComponent implements OnInit {
   selectUser(userName: string) {
     this.selectedUserName=userName;
     console.log(this.selectedUserName)
+    this.changeMessageCountByUserName(userName);
+  }
+  refreshPage() {
+    location.reload();
   }
   loadComponent() {
     this.dynamicLoadComponentService.loadComponent(ComponentType.BasketsComponent, this.dynamicLoadComponentDirective.viewContainerRef);

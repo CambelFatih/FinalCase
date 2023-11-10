@@ -73,7 +73,7 @@ export class UserAuthService {
     if (tokenResponse) {
       localStorage.setItem("accessToken", tokenResponse.token.accessToken);
       localStorage.setItem("refreshToken", tokenResponse.token.refreshToken);
-
+      
       this.signalRService.start(HubUrls.ChatHub);
 
       this.toastrService.message("Google üzerinden giriş başarıyla sağlanmıştır.", "Giriş Başarılı", {
@@ -83,6 +83,7 @@ export class UserAuthService {
     }
 
     callBackFunction();
+    location.reload();
   }
 
   async facebookLogin(user: SocialUser, callBackFunction?: () => void): Promise<any> {
@@ -106,6 +107,7 @@ export class UserAuthService {
     }
 
     callBackFunction();
+    location.reload();
   }
 
   async passwordReset(email: string, callBackFunction?: () => void) {

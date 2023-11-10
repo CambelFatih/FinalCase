@@ -22,4 +22,8 @@
   overflow-y: auto; /* Yalnızca dikey scrollbar görüntüle */
   display: flex;
   flex-direction: column-reverse; /* Mesajları aşağıdan yukarıya doğru görüntüle */
+  //border: 1px solid black;
+}
+.messageCount{
+  color: red;
 }

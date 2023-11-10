@@ -44,6 +44,12 @@ public class ChatHub : Hub
     }
     public async Task SendMessageToAdminAsync(string message)
     {
+        // Check if the user is authenticated
+        if (!Context.User.Identity.IsAuthenticated)
+        {
+            await Clients.Client(Context.ConnectionId).SendAsync(ReceiveFunctionNames.MessageFromAdmin, "Bu işlemi sadece Giriş yapan kullanıcılar gerçekleştirebilir");
+            return;
+        }
         var userId = Context.User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
         var rolesClaims = Context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
         var name = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
@@ -51,7 +57,7 @@ public class ChatHub : Hub
         // Kullanıcının müşteri olup olmadığını kontrol et
         if (await HasBayiRole(rolesClaims)==false)
         {
-            await Clients.Client(Context.ConnectionId).SendAsync(ReceiveFunctionNames.MessageFromCustomer, "Bu işlemi sadece Bayiler gerçekleştirebilir.");
+           // await Clients.Client(Context.ConnectionId).SendAsync(ReceiveFunctionNames.MessageFromCustomer, "Bu işlemi sadece Bayiler gerçekleştirebilir.");
             return;
         }
         //var adminConnectionId = await _adminHubService.GetAdminConnectionIdFromProperty();

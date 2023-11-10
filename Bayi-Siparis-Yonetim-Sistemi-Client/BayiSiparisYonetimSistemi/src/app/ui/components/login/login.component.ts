@@ -52,7 +52,6 @@ export class LoginComponent extends BaseComponent implements OnInit {
     this.showSpinner(SpinnerType.BallAtom);
     await this.userAuthService.login(usernameOrEmail, password, () => {
       this.authService.identityCheck();
-
       this.activatedRoute.queryParams.subscribe(params => {
         const returnUrl: string = params["returnUrl"];
         if (returnUrl)
