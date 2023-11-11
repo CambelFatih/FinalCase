@@ -1,7 +1,8 @@
-Kullanıcı Roller ve İzinleri Açıklaması
-Bu uygulama, kullanıcı rolleri ve izinlerini yönetmek için bir filtre kullanır. İlgili kod parçasını incelediğimizde, kullanıcıların belirli roller ve izinlere sahip olup olmadığını kontrol etmek için bir filtre olan RolePermissionFilter'ı görebiliriz.
+## Kullanıcı Roller ve İzinleri Açıklaması
 
-Bu filtre, kullanıcıların kimlik doğrulama durumlarına ve rollerine göre belirli eylemleri kontrol eder. Özellikle, bu uygulama, ilk kayıt sırasında kullanıcı adını "Ataturk" olarak belirlemeniz gerektiğini ve bu kullanıcının admin olarak tüm erişimlere sahip olacağını belirtmektedir.
+Bu uygulama, kullanıcı rolleri ve izinlerini yönetmek için bir filtre kullanır. İlgili kod parçasını incelediğimizde, kullanıcıların kimlik doğrulama durumlarına ve rollerine göre belirli eylemleri kontrol eden `RolePermissionFilter` filtresini görebiliriz.
+
+Bu filtre, kullanıcıların belirli roller ve izinlere sahip olup olmadığını kontrol eder. Özellikle, bu uygulama, ilk kayıt sırasında kullanıcı adını "Ataturk" olarak belirlemeniz gerektiğini ve bu kullanıcının admin olarak tüm erişimlere sahip olacağını belirtmektedir.
 
 İlk kayıt sırasında, uygulama bu kullanıcı adını kontrol eder ve eğer kullanıcı adı "Ataturk" değilse, sadece belirli izinlere sahip bir kullanıcı olarak işlem görür.
 
